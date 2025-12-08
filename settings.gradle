@@ -1,0 +1,17 @@
+rootProject.name = 'niffler'
+
+def modules = [
+        'niffler-gateway',
+        'niffler-auth',
+        'niffler-currency',
+        'niffler-userdata',
+        'niffler-spend',
+        'niffler-grpc-common',
+        'niffler-e-2-e-tests'
+]
+
+modules.each { m ->
+    if (file(m).exists()) {
+        include m
+    }
+}
