@@ -37,6 +37,7 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation "org.springframework.security:spring-security-test:${project.ext.springSecurityTestVersion}"
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
 }
 
 xjcGeneration {

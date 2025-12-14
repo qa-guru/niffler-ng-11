@@ -230,4 +230,4 @@ services:
 
 networks:
   niffler-network:
-    driver: bridge
+    driver: host
