@@ -10,6 +10,11 @@ public enum LocalConfig implements Config {
   }
 
   @Override
+  public String spendUrl() {
+    return "http://localhost:8093/";
+  }
+
+  @Override
   public String spendJdbcUrl() {
     return "jdbc:postgresql://localhost:5432/niffler-spend";
   }
@@ -22,5 +27,10 @@ public enum LocalConfig implements Config {
   @Override
   public String dbPassword() {
     return "secret";
+  }
+
+  @Override
+  public String githubUrl() {
+    return "https://api.github.com/";
   }
 }

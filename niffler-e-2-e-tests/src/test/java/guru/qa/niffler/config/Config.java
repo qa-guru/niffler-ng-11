@@ -8,9 +8,13 @@ public interface Config {
 
   String frontUrl();
 
+  String spendUrl();
+
   String spendJdbcUrl();
 
   String dbUsername();
 
   String dbPassword();
+
+  String githubUrl();
 }
