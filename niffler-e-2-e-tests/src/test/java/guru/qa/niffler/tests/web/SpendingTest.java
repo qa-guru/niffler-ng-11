@@ -4,7 +4,6 @@ import com.codeborne.selenide.Selenide;
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.jupiter.annotation.Spend;
 import guru.qa.niffler.jupiter.extension.BrowserExtension;
-import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.SpendJson;
 import guru.qa.niffler.page.LoginPage;
 import org.junit.jupiter.api.Test;
@@ -17,20 +16,20 @@ public class SpendingTest {
 
   @Spend(
       username = "duck",
-      category = "Учеба",
-      amount = 89900,
-      currency = CurrencyValues.RUB,
-      description = "Обучение Niffler 2.0 юбилейный поток!"
+      amount = 89990.00,
+      description = "Advanced 9 поток!",
+      category = "Обучение"
   )
   @Test
-  void spendingDescriptionShouldBeEditedByTableAction(SpendJson spending) {
-    final String newDescription = "Обучение Niffler Next Generation";
+  void mainPageShouldBeDisplayedAfterSuccessLogin(SpendJson spendJson) {
+    final String newDescription = ":)";
 
     Selenide.open(CFG.frontUrl(), LoginPage.class)
-        .login("duck", "12345")
-        .editSpending(spending.description())
+        .successLogin("duck", "12345")
+        .checkThatPageLoaded()
+        .editSpending(spendJson.description())
         .setNewSpendingDescription(newDescription)
         .save()
-        .checkThatTableContains(newDescription);
+        .checkThatTableContainsSpending(newDescription);
   }
 }
