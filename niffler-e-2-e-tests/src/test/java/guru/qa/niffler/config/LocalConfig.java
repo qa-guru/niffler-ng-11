@@ -6,7 +6,7 @@ public enum LocalConfig implements Config {
 
   @Override
   public String frontUrl() {
-    return "http://localhost:3000";
+    return "http://localhost:3000/";
   }
 
   @Override

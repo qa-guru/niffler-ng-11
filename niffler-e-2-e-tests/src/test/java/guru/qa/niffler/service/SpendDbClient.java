@@ -111,6 +111,34 @@ public class SpendDbClient implements SpendClient {
   }
 
   @Override
+  public CategoryJson updateCategory(CategoryJson category) {
+    final JdbcTemplate jdbcTemplate;
+    try {
+      jdbcTemplate = new JdbcTemplate(new SingleConnectionDataSource(
+          DriverManager.getConnection(
+              CFG.spendJdbcUrl(),
+              CFG.dbUsername(),
+              CFG.dbPassword()
+          ),
+          true)
+      );
+      jdbcTemplate.update("""
+              UPDATE "category"
+                SET name = ?,
+                    archived = ?
+                WHERE id = ?
+            """,
+          category.name(),
+          category.archived(),
+          category.id()
+      );
+      return category;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
   public Optional<CategoryJson> findByNameAndUsername(String name, String username) {
     try {
       final JdbcTemplate jdbcTemplate = new JdbcTemplate(new SingleConnectionDataSource(
