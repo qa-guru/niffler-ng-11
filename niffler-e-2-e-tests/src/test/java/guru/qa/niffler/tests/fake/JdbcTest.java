@@ -5,10 +5,11 @@ import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.SpendJson;
 import guru.qa.niffler.model.UserJson;
 import guru.qa.niffler.service.SpendDbClient;
-import guru.qa.niffler.service.UserClient;
 import guru.qa.niffler.service.UserDbClient;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Date;
 
@@ -25,13 +26,13 @@ public class JdbcTest {
             new Date(),
             new CategoryJson(
                 null,
-                "cat-name-tx-2",
+                "cat-name-tx-3",
                 "duck",
                 false
             ),
             CurrencyValues.RUB,
             1000.0,
-            "spend-name-tx",
+            "spend-name-tx-3",
             "duck"
         )
     );
@@ -39,22 +40,20 @@ public class JdbcTest {
     System.out.println(spend);
   }
 
-  @Test
-  void xaTxTest() {
-    UserClient usersDbClient = new UserDbClient();
+
+  static UserDbClient usersDbClient = new UserDbClient();
+
+  @ValueSource(strings = {
+      "valentin-10"
+  })
+  @ParameterizedTest
+  void springJdbcTest(String uname) {
     UserJson user = usersDbClient.createUser(
-        new UserJson(
-            null,
-            "valentin-4",
-            null,
-            null,
-            null,
-            CurrencyValues.RUB,
-            null,
-            null,
-            null
-        )
+        uname,
+        "12345"
     );
-    System.out.println(user);
+
+    usersDbClient.addIncomeInvitation(user, 1);
+    usersDbClient.addOutcomeInvitation(user, 1);
   }
 }
