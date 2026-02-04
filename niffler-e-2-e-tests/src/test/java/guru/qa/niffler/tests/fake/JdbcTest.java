@@ -3,7 +3,10 @@ package guru.qa.niffler.tests.fake;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.SpendJson;
+import guru.qa.niffler.model.UserJson;
 import guru.qa.niffler.service.SpendDbClient;
+import guru.qa.niffler.service.UserClient;
+import guru.qa.niffler.service.UserDbClient;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -34,5 +37,24 @@ public class JdbcTest {
     );
 
     System.out.println(spend);
+  }
+
+  @Test
+  void xaTxTest() {
+    UserClient usersDbClient = new UserDbClient();
+    UserJson user = usersDbClient.createUser(
+        new UserJson(
+            null,
+            "valentin-4",
+            null,
+            null,
+            null,
+            CurrencyValues.RUB,
+            null,
+            null,
+            null
+        )
+    );
+    System.out.println(user);
   }
 }
