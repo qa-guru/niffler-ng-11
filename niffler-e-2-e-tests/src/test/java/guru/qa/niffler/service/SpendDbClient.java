@@ -21,21 +21,26 @@ import java.sql.Statement;
 import java.util.Optional;
 import java.util.UUID;
 
+import static guru.qa.niffler.data.Databases.transaction;
+
 public class SpendDbClient implements SpendClient {
 
   private static final Config CFG = Config.getInstance();
-  private final SpendDao spendDao = new SpendDaoJdbc();
-  private final CategoryDao categoryDao = new CategoryDaoJdbc();
 
   @Override
   public SpendJson createSpend(SpendJson spend) {
-    SpendEntity spendEntity = SpendEntity.fromJson(spend);
-    if (spendEntity.getCategory().getId() == null) {
-      CategoryEntity categoryEntity = categoryDao.create(spendEntity.getCategory());
-      spendEntity.setCategory(categoryEntity);
-    }
-    return SpendJson.fromEntity(
-        spendDao.create(spendEntity)
+    return transaction(connection -> {
+          SpendEntity spendEntity = SpendEntity.fromJson(spend);
+          if (spendEntity.getCategory().getId() == null) {
+            CategoryEntity categoryEntity = new CategoryDaoJdbc(connection)
+                .create(spendEntity.getCategory());
+            spendEntity.setCategory(categoryEntity);
+          }
+          return SpendJson.fromEntity(
+              new SpendDaoJdbc(connection).create(spendEntity)
+          );
+        },
+        CFG.spendJdbcUrl()
     );
   }
 
