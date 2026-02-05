@@ -3,6 +3,7 @@ package guru.qa.niffler.data.dao.impl;
 import guru.qa.niffler.config.Config;
 import guru.qa.niffler.data.dao.CategoryDao;
 import guru.qa.niffler.data.entity.spend.CategoryEntity;
+import guru.qa.niffler.data.mapper.CategoryEntityRowMapper;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -57,12 +58,9 @@ public class CategoryDaoJdbc implements CategoryDao {
       ps.execute();
       try (ResultSet rs = ps.getResultSet()) {
         if (rs.next()) {
-          CategoryEntity ce = new CategoryEntity();
-          ce.setId(rs.getObject("id", UUID.class));
-          ce.setUsername(rs.getString("username"));
-          ce.setName(rs.getString("name"));
-          ce.setArchived(rs.getBoolean("archived"));
-          return Optional.of(ce);
+          return Optional.ofNullable(
+              CategoryEntityRowMapper.instance.mapRow(rs, rs.getRow())
+          );
         } else {
           return Optional.empty();
         }
@@ -80,12 +78,30 @@ public class CategoryDaoJdbc implements CategoryDao {
       List<CategoryEntity> result = new ArrayList<>();
       try (ResultSet rs = ps.getResultSet()) {
         while (rs.next()) {
-          CategoryEntity ce = new CategoryEntity();
-          ce.setId(rs.getObject("id", UUID.class));
-          ce.setUsername(rs.getString("username"));
-          ce.setName(rs.getString("name"));
-          ce.setArchived(rs.getBoolean("archived"));
-          result.add(ce);
+          result.add(
+              CategoryEntityRowMapper.instance.mapRow(rs, rs.getRow())
+          );
+        }
+      }
+      return result;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public List<CategoryEntity> findAllByUsernameAndCategoryName(String username, String categoryName) {
+    try (PreparedStatement ps = holder(URL).connection().prepareStatement(
+        "SELECT * FROM category WHERE username = ? AND name = ?")) {
+      ps.setString(1, username);
+      ps.setString(2, categoryName);
+      ps.execute();
+      List<CategoryEntity> result = new ArrayList<>();
+      try (ResultSet rs = ps.getResultSet()) {
+        while (rs.next()) {
+          result.add(
+              CategoryEntityRowMapper.instance.mapRow(rs, rs.getRow())
+          );
         }
       }
       return result;

@@ -68,6 +68,17 @@ public class CategoryDaoSpringJdbc implements CategoryDao {
   }
 
   @Override
+  public List<CategoryEntity> findAllByUsernameAndCategoryName(String username, String categoryName) {
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(URL));
+    return jdbcTemplate.query(
+        "SELECT * FROM category WHERE username = ? AND name = ?",
+        CategoryEntityRowMapper.instance,
+        username,
+        categoryName
+    );
+  }
+
+  @Override
   public CategoryEntity update(CategoryEntity category) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(URL));
     jdbcTemplate.update("""

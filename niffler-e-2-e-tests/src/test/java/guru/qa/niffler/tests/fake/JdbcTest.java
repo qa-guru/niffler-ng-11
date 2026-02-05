@@ -1,17 +1,21 @@
 package guru.qa.niffler.tests.fake;
 
+import guru.qa.niffler.data.entity.auth.AuthUserEntity;
+import guru.qa.niffler.data.repository.impl.AuthUserRepositorySpringJdbc;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.SpendJson;
 import guru.qa.niffler.model.UserJson;
 import guru.qa.niffler.service.SpendDbClient;
 import guru.qa.niffler.service.UserDbClient;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Date;
+import java.util.Optional;
 
 @Disabled
 public class JdbcTest {
@@ -44,7 +48,7 @@ public class JdbcTest {
   static UserDbClient usersDbClient = new UserDbClient();
 
   @ValueSource(strings = {
-      "valentin-11"
+      "valentin-14"
   })
   @ParameterizedTest
   void springJdbcTest(String uname) {
@@ -52,9 +56,13 @@ public class JdbcTest {
         uname,
         "12345"
     );
+    Assertions.assertNotNull(user);
+  }
 
-    usersDbClient.addIncomeInvitation(user, 1);
-    usersDbClient.addOutcomeInvitation(user, 1);
-    usersDbClient.addFriend(user, 1);
+  @Test
+  void extractorTest() {
+    AuthUserRepositorySpringJdbc authUserRepositorySpringJdbc = new AuthUserRepositorySpringJdbc();
+    Optional<AuthUserEntity> username = authUserRepositorySpringJdbc.findByUsername("valentin-11");
+    Assertions.assertEquals(2, username.get().getAuthorities().size());
   }
 }

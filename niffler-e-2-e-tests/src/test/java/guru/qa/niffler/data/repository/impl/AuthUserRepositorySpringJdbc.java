@@ -15,6 +15,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.Optional;
 import java.util.UUID;
 
+import static java.util.Objects.requireNonNull;
+
 
 public class AuthUserRepositorySpringJdbc implements AuthUserRepository {
 
@@ -35,7 +37,7 @@ public class AuthUserRepositorySpringJdbc implements AuthUserRepository {
   public Optional<AuthUserEntity> findById(UUID id) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
     return Optional.ofNullable(
-        jdbcTemplate.query(
+        requireNonNull(jdbcTemplate.query(
             """
                     SELECT a.id as authority_id,
                    authority,
@@ -50,7 +52,7 @@ public class AuthUserRepositorySpringJdbc implements AuthUserRepository {
                 """,
             AuthUserEntityExtractor.instance,
             id
-        )
+        )).getFirst()
     );
   }
 
@@ -58,7 +60,7 @@ public class AuthUserRepositorySpringJdbc implements AuthUserRepository {
   public Optional<AuthUserEntity> findByUsername(String username) {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(DataSources.dataSource(url));
     return Optional.ofNullable(
-        jdbcTemplate.query(
+        requireNonNull(jdbcTemplate.query(
             """
                     SELECT a.id as authority_id,
                    authority,
@@ -73,7 +75,7 @@ public class AuthUserRepositorySpringJdbc implements AuthUserRepository {
                 """,
             AuthUserEntityExtractor.instance,
             username
-        )
+        )).getFirst()
     );
   }
 }
