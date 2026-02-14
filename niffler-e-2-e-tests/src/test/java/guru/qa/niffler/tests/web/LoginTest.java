@@ -11,18 +11,18 @@ import static guru.qa.niffler.utils.RandomDataUtils.randomUsername;
 @WebTest
 public class LoginTest {
 
-  private static final Config CFG = Config.getInstance();
+  private Config cfg;
 
   @Test
   void mainPageShouldBeDisplayedAfterSuccessLogin() {
-    Selenide.open(CFG.frontUrl(), LoginPage.class)
+    Selenide.open(cfg.frontUrl(), LoginPage.class)
         .successLogin("duck", "12345")
         .checkThatPageLoaded();
   }
 
   @Test
   void userShouldStayOnLoginPageAfterLoginWithBadCredentials() {
-    LoginPage loginPage = Selenide.open(CFG.frontUrl(), LoginPage.class);
+    LoginPage loginPage = Selenide.open(cfg.frontUrl(), LoginPage.class);
     loginPage.fillLoginPage(randomUsername(), "BAD");
     loginPage.checkError("Bad credentials");
   }

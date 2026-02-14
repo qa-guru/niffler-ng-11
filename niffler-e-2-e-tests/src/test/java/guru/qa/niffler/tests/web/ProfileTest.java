@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 @WebTest
 public class ProfileTest {
 
-  private static final Config CFG = Config.getInstance();
+  private Config cfg;
 
   @User(
       categories = @Category(
@@ -25,11 +25,11 @@ public class ProfileTest {
   void archivedCategoryShouldPresentInCategoriesList(UserJson user) {
     final CategoryJson expectedCategory = user.testData().categories().getFirst();
 
-    Selenide.open(CFG.frontUrl(), LoginPage.class)
+    Selenide.open(cfg.frontUrl(), LoginPage.class)
         .successLogin(user.username(), user.testData().password())
         .checkThatPageLoaded();
 
-    Selenide.open(CFG.frontUrl() + "profile", ProfilePage.class)
+    Selenide.open(cfg.frontUrl() + "profile", ProfilePage.class)
         .checkArchivedCategoryExists(expectedCategory.name());
   }
 
@@ -40,11 +40,11 @@ public class ProfileTest {
   )
   @Test
   void activeCategoryShouldPresentInCategoriesList(CategoryJson category) {
-    Selenide.open(CFG.frontUrl(), LoginPage.class)
+    Selenide.open(cfg.frontUrl(), LoginPage.class)
         .successLogin("duck", "12345")
         .checkThatPageLoaded();
 
-    Selenide.open(CFG.frontUrl() + "profile", ProfilePage.class)
+    Selenide.open(cfg.frontUrl() + "profile", ProfilePage.class)
         .checkCategoryExists(category.name());
   }
 }

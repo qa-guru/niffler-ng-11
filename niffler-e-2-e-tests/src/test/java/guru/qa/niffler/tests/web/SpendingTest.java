@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 @WebTest
 public class SpendingTest {
 
-  private static final Config CFG = Config.getInstance();
+  private Config cfg;
 
   @User(
       spendings = @Spend(
@@ -28,7 +28,7 @@ public class SpendingTest {
 
     final String newDescription = ":)";
 
-    Selenide.open(CFG.frontUrl(), LoginPage.class)
+    Selenide.open(cfg.frontUrl(), LoginPage.class)
         .successLogin(user.username(), user.testData().password())
         .checkThatPageLoaded()
         .editSpending(spendJson.description())
