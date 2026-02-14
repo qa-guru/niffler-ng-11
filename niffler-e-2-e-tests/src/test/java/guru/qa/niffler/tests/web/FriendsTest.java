@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 @WebTest
 public class FriendsTest {
 
-  private static final Config CFG = Config.getInstance();
+  private Config cfg;
 
   @User(
       friends = 1
@@ -20,7 +20,7 @@ public class FriendsTest {
   void friendShouldBePresentInFriendsTable(UserJson user) {
     final UserJson expectedFriend = user.testData().friends().getFirst();
 
-    Selenide.open(CFG.frontUrl(), LoginPage.class)
+    Selenide.open(cfg.frontUrl(), LoginPage.class)
         .successLogin(user.username(), user.testData().password())
         .checkThatPageLoaded()
         .friendsPage()
@@ -30,7 +30,7 @@ public class FriendsTest {
   @User
   @Test
   void friendsTableShouldBeEmptyForNewUser(UserJson user) {
-    Selenide.open(CFG.frontUrl(), LoginPage.class)
+    Selenide.open(cfg.frontUrl(), LoginPage.class)
         .successLogin(user.username(), user.testData().password())
         .checkThatPageLoaded()
         .friendsPage()
@@ -44,7 +44,7 @@ public class FriendsTest {
   void incomeInvitationBePresentInFriendsTable(UserJson user) {
     final UserJson expectedIncome = user.testData().incomeInvitations().getFirst();
 
-    Selenide.open(CFG.frontUrl(), LoginPage.class)
+    Selenide.open(cfg.frontUrl(), LoginPage.class)
         .successLogin(user.username(), user.testData().password())
         .checkThatPageLoaded()
         .friendsPage()
@@ -58,7 +58,7 @@ public class FriendsTest {
   void outcomeInvitationBePresentInAllPeoplesTable(UserJson user) {
     final UserJson expectedOutcome = user.testData().outcomeInvitations().getFirst();
 
-    Selenide.open(CFG.frontUrl(), LoginPage.class)
+    Selenide.open(cfg.frontUrl(), LoginPage.class)
         .successLogin(user.username(), user.testData().password())
         .checkThatPageLoaded()
         .allPeoplesPage()

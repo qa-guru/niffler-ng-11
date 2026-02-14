@@ -11,13 +11,13 @@ import static guru.qa.niffler.utils.RandomDataUtils.randomUsername;
 @WebTest
 public class RegistrationTest {
 
-  private static final Config CFG = Config.getInstance();
+  private Config cfg;
 
   @Test
   void shouldRegisterNewUser() {
     String newUsername = randomUsername();
     String password = "12345";
-    Selenide.open(CFG.frontUrl(), LoginPage.class)
+    Selenide.open(cfg.frontUrl(), LoginPage.class)
         .doRegister()
         .fillRegisterPage(newUsername, password, password)
         .successSubmit()
@@ -30,7 +30,7 @@ public class RegistrationTest {
     String existingUsername = "duck";
     String password = "12345";
 
-    LoginPage loginPage = Selenide.open(CFG.frontUrl(), LoginPage.class);
+    LoginPage loginPage = Selenide.open(cfg.frontUrl(), LoginPage.class);
     loginPage.doRegister()
         .fillRegisterPage(existingUsername, password, password)
         .submit();
@@ -42,7 +42,7 @@ public class RegistrationTest {
     String newUsername = randomUsername();
     String password = "12345";
 
-    LoginPage loginPage = Selenide.open(CFG.frontUrl(), LoginPage.class);
+    LoginPage loginPage = Selenide.open(cfg.frontUrl(), LoginPage.class);
     loginPage.doRegister()
         .fillRegisterPage(newUsername, password, "bad password submit")
         .submit();
