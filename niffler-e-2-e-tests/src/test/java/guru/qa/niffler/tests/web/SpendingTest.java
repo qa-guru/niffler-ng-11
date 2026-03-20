@@ -1,7 +1,7 @@
 package guru.qa.niffler.tests.web;
 
 import com.codeborne.selenide.Selenide;
-import guru.qa.niffler.config.Config;
+import guru.qa.niffler.jupiter.annotation.Category;
 import guru.qa.niffler.jupiter.annotation.ScreenShotTest;
 import guru.qa.niffler.jupiter.annotation.Spend;
 import guru.qa.niffler.jupiter.annotation.User;
@@ -10,21 +10,14 @@ import guru.qa.niffler.model.UserJson;
 import guru.qa.niffler.page.LoginPage;
 import guru.qa.niffler.page.MainPage;
 import guru.qa.niffler.utils.RandomDataUtils;
-import guru.qa.niffler.utils.ScreenDiffResult;
 import org.junit.jupiter.api.Test;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Date;
 
-import static com.codeborne.selenide.Selenide.$;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
 @WebTest
 public class SpendingTest {
-
-  private Config cfg;
 
   @User(
       spendings = @Spend(
@@ -121,7 +114,6 @@ public class SpendingTest {
         .checkTableSize(0);
   }
 
-
   @User(
       spendings = @Spend(
           category = "Обучение",
@@ -129,17 +121,48 @@ public class SpendingTest {
           amount = 79990.00
       )
   )
-  @ScreenShotTest("img/expected-stat.png")
+  @ScreenShotTest(value = "img/expected-stat.png", rewriteExpected = true)
   void checkStatComponentTest(UserJson user, BufferedImage expected) throws IOException {
     Selenide.open(LoginPage.URL, LoginPage.class)
         .fillLoginPage(user.username(), user.testData().password())
-        .submit(new MainPage());
+        .submit(new MainPage())
+        .getStatComponent()
+        .checkStatisticBubblesContains("Обучение 79990 ₽")
+        .checkStatisticImage(expected);
+  }
 
-    BufferedImage actual = ImageIO.read($("canvas[role='img']").screenshot());
-    assertFalse(new ScreenDiffResult(
-        expected,
-        actual
-    ));
+  @User(
+      categories = {
+          @Category(name = "Поездки"),
+          @Category(name = "Ремонт", archived = true),
+          @Category(name = "Страховка", archived = true)
+      },
+      spendings = {
+          @Spend(
+              category = "Поездки",
+              description = "В Москву",
+              amount = 9500
+          ),
+          @Spend(
+              category = "Ремонт",
+              description = "Цемент",
+              amount = 100
+          ),
+          @Spend(
+              category = "Страховка",
+              description = "ОСАГО",
+              amount = 3000
+          )
+      }
+  )
+  @ScreenShotTest(value = "img/expected-stat-archived.png", rewriteExpected = true)
+  void statComponentShouldDisplayArchivedCategories(UserJson user, BufferedImage expected) throws IOException {
+    Selenide.open(LoginPage.URL, LoginPage.class)
+        .fillLoginPage(user.username(), user.testData().password())
+        .submit(new MainPage())
+        .getStatComponent()
+        .checkStatisticBubblesContains("Поездки 9500 ₽", "Archived 3100 ₽")
+        .checkStatisticImage(expected);
   }
 }
 
