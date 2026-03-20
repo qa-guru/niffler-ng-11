@@ -57,7 +57,7 @@ public class ProfileTest {
   }
 
   @User
-  @ScreenShotTest(value = "img/expected-avatar.png")
+  @ScreenShotTest(value = "img/expected-avatar.png", rewriteExpected = true)
   void shouldUpdateProfileWithAllFieldsSet(UserJson user, BufferedImage expectedAvatar) throws IOException {
     final String newName = randomName();
 
