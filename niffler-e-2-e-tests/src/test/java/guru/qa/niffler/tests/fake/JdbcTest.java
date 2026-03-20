@@ -6,8 +6,9 @@ import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.SpendJson;
 import guru.qa.niffler.model.UserJson;
-import guru.qa.niffler.service.SpendDbClient;
-import guru.qa.niffler.service.UserDbClient;
+import guru.qa.niffler.service.UserClient;
+import guru.qa.niffler.service.impl.SpendDbClient;
+import guru.qa.niffler.service.impl.UsersDbClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -45,7 +46,7 @@ public class JdbcTest {
   }
 
 
-  static UserDbClient usersDbClient = new UserDbClient();
+  static UserClient usersDbClient = new UsersDbClient();
 
   @ValueSource(strings = {
       "valentin-14"

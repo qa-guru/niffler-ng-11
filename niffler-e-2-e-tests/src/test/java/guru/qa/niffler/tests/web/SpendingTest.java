@@ -5,10 +5,13 @@ import guru.qa.niffler.config.Config;
 import guru.qa.niffler.jupiter.annotation.Spend;
 import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.jupiter.annotation.meta.WebTest;
-import guru.qa.niffler.model.SpendJson;
 import guru.qa.niffler.model.UserJson;
 import guru.qa.niffler.page.LoginPage;
+import guru.qa.niffler.page.MainPage;
+import guru.qa.niffler.utils.RandomDataUtils;
 import org.junit.jupiter.api.Test;
+
+import java.util.Date;
 
 @WebTest
 public class SpendingTest {
@@ -24,16 +27,90 @@ public class SpendingTest {
   )
   @Test
   void mainPageShouldBeDisplayedAfterSuccessLogin(UserJson user) {
-    final SpendJson spendJson = user.testData().spendings().getFirst();
+    final String spendDescription = user.testData().spendings().getFirst().description();
+    final String newDescription = "Обучение Niffler Next Generation";
 
-    final String newDescription = ":)";
-
-    Selenide.open(cfg.frontUrl(), LoginPage.class)
-        .successLogin(user.username(), user.testData().password())
-        .checkThatPageLoaded()
-        .editSpending(spendJson.description())
+    Selenide.open(LoginPage.URL, LoginPage.class)
+        .fillLoginPage(user.username(), user.testData().password())
+        .submit(new MainPage())
+        .getSpendingTable()
+        .editSpending(spendDescription)
         .setNewSpendingDescription(newDescription)
-        .save()
-        .checkThatTableContainsSpending(newDescription);
+        .saveSpending();
+
+    new MainPage().getSpendingTable()
+        .checkTableContains(newDescription);
+  }
+
+  @User
+  @Test
+  void shouldAddNewSpending(UserJson user) {
+    String category = "Friends";
+    int amount = 100;
+    Date currentDate = new Date();
+    String description = RandomDataUtils.randomSentence(3);
+
+    Selenide.open(LoginPage.URL, LoginPage.class)
+        .fillLoginPage(user.username(), user.testData().password())
+        .submit(new MainPage())
+        .getHeader()
+        .addSpendingPage()
+        .setNewSpendingCategory(category)
+        .setNewSpendingAmount(amount)
+        .setNewSpendingDate(currentDate)
+        .setNewSpendingDescription(description)
+        .saveSpending()
+        .checkAlert("New spending is successfully created");
+
+    new MainPage().getSpendingTable()
+        .checkTableContains(description);
+  }
+
+  @User
+  @Test
+  void shouldNotAddSpendingWithEmptyCategory(UserJson user) {
+    Selenide.open(LoginPage.URL, LoginPage.class)
+        .fillLoginPage(user.username(), user.testData().password())
+        .submit(new MainPage())
+        .getHeader()
+        .addSpendingPage()
+        .setNewSpendingAmount(100)
+        .setNewSpendingDate(new Date())
+        .saveSpending()
+        .checkFormErrorMessage("Please choose category");
+  }
+
+  @User
+  @Test
+  void shouldNotAddSpendingWithEmptyAmount(UserJson user) {
+    Selenide.open(LoginPage.URL, LoginPage.class)
+        .fillLoginPage(user.username(), user.testData().password())
+        .submit(new MainPage())
+        .getHeader()
+        .addSpendingPage()
+        .setNewSpendingCategory("Friends")
+        .setNewSpendingDate(new Date())
+        .saveSpending()
+        .checkFormErrorMessage("Amount has to be not less then 0.01");
+  }
+
+  @User(
+      spendings = @Spend(
+          amount = 89990.00,
+          description = "Обучение Niffler 2.0 юбилейный поток!",
+          category = "Обучение"
+      )
+  )
+  @Test
+  void deleteSpendingTest(UserJson user) {
+    final String spendDescription = user.testData().spendings().getFirst().description();
+
+    Selenide.open(LoginPage.URL, LoginPage.class)
+        .fillLoginPage(user.username(), user.testData().password())
+        .submit(new MainPage())
+        .getSpendingTable()
+        .deleteSpending(spendDescription)
+        .checkTableSize(0);
   }
 }
+

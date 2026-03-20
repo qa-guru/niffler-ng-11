@@ -4,7 +4,6 @@ import guru.qa.niffler.jupiter.annotation.Category;
 import guru.qa.niffler.jupiter.annotation.User;
 import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.UserJson;
-import guru.qa.niffler.service.SpendApiClient;
 import guru.qa.niffler.service.SpendClient;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
@@ -15,6 +14,7 @@ import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 import org.junit.platform.commons.support.AnnotationSupport;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +22,7 @@ import java.util.Optional;
 import static guru.qa.niffler.jupiter.extension.TestMethodContextExtension.context;
 import static guru.qa.niffler.utils.RandomDataUtils.randomCategoryName;
 
+@ParametersAreNonnullByDefault
 public class CategoryExtension implements
     BeforeEachCallback,
     AfterTestExecutionCallback,
@@ -29,19 +30,21 @@ public class CategoryExtension implements
 
   public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(CategoryExtension.class);
 
-  private final SpendClient spendClient = new SpendApiClient();
+  private final SpendClient spendClient = SpendClient.getInstance();
 
   @Override
-  public void beforeEach(ExtensionContext context) throws Exception {
+  public void beforeEach(ExtensionContext context) {
     AnnotationSupport.findAnnotation(context.getRequiredTestMethod(), User.class)
         .ifPresent(userAnno -> {
-          final Optional<UserJson> user = UserExtension.createdUser();
-          final String username = user.isPresent()
-              ? user.get().username()
-              : userAnno.username();
-
-          final List<CategoryJson> result = new ArrayList<>();
           if (ArrayUtils.isNotEmpty(userAnno.categories())) {
+
+            final Optional<UserJson> testUser = UserExtension.createdUser();
+            final String username = testUser.isPresent()
+                ? testUser.get().username()
+                : userAnno.username();
+
+            final List<CategoryJson> result = new ArrayList<>();
+
             for (Category categoryAnno : userAnno.categories()) {
               CategoryJson category = new CategoryJson(
                   null,
@@ -50,6 +53,7 @@ public class CategoryExtension implements
                   categoryAnno.archived()
               );
               CategoryJson created = spendClient.createCategory(category);
+
               if (categoryAnno.archived()) {
                 CategoryJson archivedCategory = new CategoryJson(
                     created.id(),
@@ -62,8 +66,8 @@ public class CategoryExtension implements
               result.add(created);
             }
 
-            if (user.isPresent()) {
-              user.get().testData().categories().addAll(
+            if (testUser.isPresent()) {
+              testUser.get().testData().categories().addAll(
                   result
               );
             } else {
@@ -77,43 +81,38 @@ public class CategoryExtension implements
   }
 
   @Override
-  public void afterTestExecution(ExtensionContext context) throws Exception {
-    Optional<CategoryJson[]> categories = createdCategories();
-    if (categories.isPresent()) {
-      for (CategoryJson category : categories.get()) {
-        if (category != null && !category.archived()) {
-          category = new CategoryJson(
+  public void afterTestExecution(ExtensionContext context) {
+    CategoryJson[] categories = createdCategory();
+    if (categories != null) {
+      for (CategoryJson category : categories) {
+        if (!category.archived()) {
+          CategoryJson archivedCategory = new CategoryJson(
               category.id(),
               category.name(),
               category.username(),
               true
           );
-          spendClient.updateCategory(category);
+          spendClient.updateCategory(archivedCategory);
         }
       }
     }
   }
 
   @Override
-  public boolean supportsParameter(ParameterContext parameterContext,
-                                   ExtensionContext extensionContext) throws ParameterResolutionException {
+  public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws
+      ParameterResolutionException {
     return parameterContext.getParameter().getType().isAssignableFrom(CategoryJson[].class);
   }
 
   @Override
-  public CategoryJson[] resolveParameter(ParameterContext parameterContext,
-                                       ExtensionContext extensionContext) throws ParameterResolutionException {
-    final Optional<UserJson> user = UserExtension.createdUser();
-    if (user.isPresent()) {
-      return user.get().testData().categories().toArray(CategoryJson[]::new);
-    } else return createdCategories().orElseThrow();
+  public CategoryJson[] resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws
+      ParameterResolutionException {
+    return createdCategory();
   }
 
-  public static Optional<CategoryJson[]> createdCategories() {
+  public static CategoryJson[] createdCategory() {
     final ExtensionContext methodContext = context();
-    return Optional.ofNullable(
-        methodContext.getStore(NAMESPACE)
-        .get(methodContext.getUniqueId(), CategoryJson[].class)
-    );
+    return methodContext.getStore(NAMESPACE)
+        .get(methodContext.getUniqueId(), CategoryJson[].class);
   }
 }
