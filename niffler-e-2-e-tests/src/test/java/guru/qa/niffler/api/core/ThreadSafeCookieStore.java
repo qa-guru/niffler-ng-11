@@ -9,41 +9,38 @@ import java.util.List;
 public enum ThreadSafeCookieStore implements CookieStore {
   INSTANCE;
 
-  private final ThreadLocal<CookieStore> store = ThreadLocal
-      .withInitial(this::inMemoryCookieStore);
+  private final ThreadLocal<CookieStore> cs = ThreadLocal.withInitial(
+      ThreadSafeCookieStore::inMemoryCookieStore
+  );
 
   @Override
   public void add(URI uri, HttpCookie cookie) {
-    store.get().add(uri, cookie);
+    cs.get().add(uri, cookie);
   }
 
   @Override
   public List<HttpCookie> get(URI uri) {
-    return store.get().get(uri);
+    return cs.get().get(uri);
   }
 
   @Override
   public List<HttpCookie> getCookies() {
-    return store.get().getCookies();
+    return cs.get().getCookies();
   }
 
   @Override
   public List<URI> getURIs() {
-    return store.get().getURIs();
+    return cs.get().getURIs();
   }
 
   @Override
   public boolean remove(URI uri, HttpCookie cookie) {
-    return store.get().remove(uri, cookie);
+    return cs.get().remove(uri, cookie);
   }
 
   @Override
   public boolean removeAll() {
-    return store.get().removeAll();
-  }
-
-  private CookieStore inMemoryCookieStore() {
-    return new CookieManager().getCookieStore();
+    return cs.get().removeAll();
   }
 
   public String cookieValue(String cookieName) {
@@ -52,5 +49,9 @@ public enum ThreadSafeCookieStore implements CookieStore {
         .map(HttpCookie::getValue)
         .findFirst()
         .orElseThrow();
+  }
+
+  private static CookieStore inMemoryCookieStore() {
+    return new CookieManager().getCookieStore();
   }
 }

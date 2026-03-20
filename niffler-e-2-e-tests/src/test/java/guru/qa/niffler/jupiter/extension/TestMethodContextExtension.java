@@ -4,21 +4,24 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
 public class TestMethodContextExtension implements BeforeEachCallback, AfterEachCallback {
 
-  private static final ThreadLocal<ExtensionContext> store = new ThreadLocal<>();
+  private static final ThreadLocal<ExtensionContext> ctxStore = new ThreadLocal<>();
 
   @Override
   public void beforeEach(ExtensionContext context) throws Exception {
-    store.set(context);
+    ctxStore.set(context);
   }
 
   @Override
   public void afterEach(ExtensionContext context) throws Exception {
-    store.remove();
+    ctxStore.remove();
   }
 
   public static ExtensionContext context() {
-    return store.get();
+    return ctxStore.get();
   }
 }
