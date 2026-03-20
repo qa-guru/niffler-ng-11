@@ -16,11 +16,14 @@ import org.junit.platform.commons.support.AnnotationSupport;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import static guru.qa.niffler.jupiter.extension.TestMethodContextExtension.context;
+import static guru.qa.niffler.utils.DateUtils.addDaysToDate;
+import static java.util.Arrays.stream;
 
 @ParametersAreNonnullByDefault
 public class SpendingExtension implements BeforeEachCallback, ParameterResolver {
@@ -40,26 +43,34 @@ public class SpendingExtension implements BeforeEachCallback, ParameterResolver 
                     ? testUser.get().username()
                     : userAnno.username();
 
-                List<SpendJson> result = new ArrayList<>();
+                final List<CategoryJson> existingCategories = testUser
+                    .map(userJson -> userJson.testData().categories())
+                    .orElseGet(() -> stream(CategoryExtension.createdCategory()).toList());
 
+                final List<SpendJson> result = new ArrayList<>();
                 for (Spend spendAnno : userAnno.spendings()) {
-                  SpendJson spendJson = new SpendJson(
+                  final Optional<CategoryJson> matchedCategory = existingCategories.stream()
+                      .filter(cat -> cat.name().equals(spendAnno.category()))
+                      .findFirst();
+
+                  SpendJson spend = new SpendJson(
                       null,
-                      new Date(),
-                      new CategoryJson(
+                      addDaysToDate(new Date(), Calendar.DAY_OF_WEEK, spendAnno.addDaysToSpendDate()),
+                      matchedCategory.orElseGet(() -> new CategoryJson(
                           null,
                           spendAnno.category(),
                           username,
                           false
-                      ),
+                      )),
                       spendAnno.currency(),
                       spendAnno.amount(),
                       spendAnno.description(),
                       username
                   );
 
-                  SpendJson created = spendClient.createSpend(spendJson);
-                  result.add(created);
+                  result.add(
+                      spendClient.createSpend(spend)
+                  );
                 }
 
                 if (testUser.isPresent()) {
